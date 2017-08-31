@@ -21,7 +21,7 @@ HEADER = {'User-Agent':
 
 
 def fetch_data():
-    print ("    <<<<<<<<<<<<<<<<<<<<< downloading >>>>>>>>>>>>>>>>>>>>>>")
+    print ("    <<<<<<<<<<<<<<<<<<<< downloading >>>>>>>>>>>>>>>>>>>>>>>")
     for target in TARGETS:
         target_result = process_data(target)
         target_result.to_pickle(target + DATA_EXT)
