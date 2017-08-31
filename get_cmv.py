@@ -8,14 +8,12 @@ from html_to_data import DATA_EXT, fetch_data
 
 
 def main():
-    """
-    """
     args = parse_arguments()
     commodity_df = get_local_data(args)
-    # return mean + variance for timeframe
+    return mean_variance(args, commodity_df)
 
 
-def mean_variance(args):
+def mean_variance(args, commodity_df):
     pass
 
 
@@ -36,8 +34,7 @@ def parse_arguments():
                                            "commodity",
                                      description="Calculates the mean and"
                                                  "variance of a commodity"
-                                                 "over the inputted time frame"
-                                     )
+                                                 "over the inputted time frame")
 
     parser.add_argument("-u", "--update",
                         help="update local data",
