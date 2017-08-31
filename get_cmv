@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # TODO: add docstring
 # TODO: add assumptions
 import argparse
@@ -10,11 +11,23 @@ from html_to_data import DATA_EXT, fetch_data
 def main():
     args = parse_arguments()
     commodity_df = get_local_data(args)
-    return mean_variance(args, commodity_df)
+
+    # update pandas.DataFrame to specified date range
+    if args.end_date < args.start_date:
+        msg = "Invalid Timeframe [{0} --> {1}]: Start Date > End Date".format(args.start_date, args.end_date)
+        raise ValueError(msg)
+
+    # indices are reversed due to chronological ordering
+    commodity_df = commodity_df.loc[args.end_date:args.start_date]
+    # get and format mean/variance of price for specified time range
+    mean_var_result = mean_variance(commodity_df)
+    print ("\n {0} commodity: {1} \n".format(mean_var_result, args.commodity))
 
 
-def mean_variance(args, commodity_df):
-    pass
+def mean_variance(commodity_df):
+    mean = commodity_df['Price'].mean()
+    variance = commodity_df['Price'].var()
+    return " mean: ${0:,.2f} | variance: ${1:,.2f} |".format(mean, variance)
 
 
 def get_local_data(args):
@@ -30,11 +43,9 @@ def get_local_data(args):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="get_cmv",
-                                     usage="%(prog)s start_date end_date"
-                                           "commodity",
-                                     description="Calculates the mean and"
-                                                 "variance of a commodity"
-                                                 "over the inputted time frame")
+                                     usage="%(prog)s start_date end_date commodity",
+                                     description="Calculates the mean and variance of "
+                                                 "a commodity over the inputted time frame")
 
     parser.add_argument("-u", "--update",
                         help="update local data",
@@ -45,12 +56,11 @@ def parse_arguments():
                         type=valid_date)
 
     parser.add_argument("end_date",
-                        help="a date in the format YYYY-MM-DD occurring after"
-                             "the start date",
+                        help="a date in the format YYYY-MM-DD occurring after the start date",
                         type=valid_date)
 
     parser.add_argument("commodity",
-                        help="a commodity name (either 'gold' or 'silver')",
+                        help="a commodity name ('gold' | 'silver')",
                         type=valid_commodity)
 
     return parser.parse_args()
@@ -60,18 +70,17 @@ def valid_commodity(s):
     if s == "gold" or s == "silver":
         return s
     else:
-        msg = "Not a valid commodity: '{0}'.".format(s)
+        msg = "Please indicate 'gold' or 'silver'. Not a valid commodity: '{0}'".format(s)
         raise argparse.ArgumentTypeError(msg)
 
 
 def valid_date(s):
-    # Source:
-    # https://stackoverflow.com/questions/25470844/specify-format-for-input-arguments-argparse-python
     try:
         return datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
+
 
 if __name__ == "__main__":
     main()

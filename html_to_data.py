@@ -21,11 +21,11 @@ HEADER = {'User-Agent':
 
 
 def fetch_data():
-    print ("    <<<<<<<<<<<<<<<<<<<< downloading >>>>>>>>>>>>>>>>>>>>>>>")
+    print ("  <<<<<<<<<<<<<<<<<<< downloading >>>>>>>>>>>>>>>>>>>>")
     for target in TARGETS:
         target_result = _process_data_(target)
         target_result.to_pickle(target + DATA_EXT)
-    print ("    ----------------- local data updated -------------------")
+    print ("  --------------- local data updated -----------------")
 
 
 def _process_data_(commodity):
@@ -39,5 +39,5 @@ def _process_data_(commodity):
     # change datetime format for 'Date' column
     # ex: "Aug 30, 2017" -> "2017-08-30"
     commodity_df['Date'] = pandas.to_datetime(commodity_df.Date)
-
+    commodity_df = commodity_df.set_index(['Date'])
     return commodity_df
