@@ -1,36 +1,50 @@
 #!/usr/bin/env python3
-# TODO: add docstring
-# TODO: add assumptions
+from datetime import datetime
 import argparse
 import os.path
-import pandas
-from datetime import datetime
 from html_to_data import DATA_EXT, fetch_data
+import pandas
 
 
 def main():
-    args = parse_arguments()
+    args = _parse_arguments_()
     commodity_df = get_local_data(args)
-
-    # update pandas.DataFrame to specified date range
-    if args.end_date < args.start_date:
-        msg = "Invalid Timeframe [{0} --> {1}]: Start Date > End Date".format(args.start_date, args.end_date)
-        raise ValueError(msg)
 
     # indices are reversed due to chronological ordering
     commodity_df = commodity_df.loc[args.end_date:args.start_date]
     # get and format mean/variance of price for specified time range
-    mean_var_result = mean_variance(commodity_df)
-    print ("\n {0} commodity: {1} \n".format(mean_var_result, args.commodity))
+    mean_var_result = mean_variance(commodity_df, 'Price')
+    print("\n {0} commodity: {1} \n".format(mean_var_result, args.commodity))
 
 
-def mean_variance(commodity_df):
-    mean = commodity_df['Price'].mean()
-    variance = commodity_df['Price'].var()
+def mean_variance(pd_df, col):
+    """ Given a Pandas.DataFrame, calculates the mean and variance of
+        the given column of pd_df.
+        Args:
+            pd_df: a Pandas.DataFrame object
+            col:   a string determining the targeted column of pd_df
+                   for calculating the mean and variance of column values
+                   assumes pd_df[col] will be valid for determining
+                   mean and variance
+        Returns:
+            a formatted string displaying in USD the mean and variance of
+            pd_df[col]
+    """
+    mean = pd_df[col].mean()
+    variance = pd_df[col].var()
     return " mean: ${0:,.2f} | variance: ${1:,.2f} |".format(mean, variance)
 
 
 def get_local_data(args):
+    """ If no local data or update flag passed, retrieves data
+        Otherwise, restores local data from Pickle to Pandas.DataFrame
+
+        Args:
+            args: command line argument with args.commodity used for specified
+                  commodity
+        Returns:
+            Pandas.DataFrame object of commodity data restored from pickling
+    """
     data_filename = args.commodity + DATA_EXT
     no_local_data = os.path.isfile(data_filename) is False
 
@@ -41,11 +55,14 @@ def get_local_data(args):
     return pandas.read_pickle(data_filename)
 
 
-def parse_arguments():
+def _parse_arguments_():
     parser = argparse.ArgumentParser(prog="get_cmv",
-                                     usage="%(prog)s start_date end_date commodity",
-                                     description="Calculates the mean and variance of "
-                                                 "a commodity over the inputted time frame")
+                                     usage="%(prog)s start_date end_date "
+                                           "commodity",
+                                     description="Calculates the mean and "
+                                                 "variance of a commodity "
+                                                 "over the inputted time frame"
+                                     )
 
     parser.add_argument("-u", "--update",
                         help="update local data",
@@ -53,28 +70,36 @@ def parse_arguments():
 
     parser.add_argument("start_date",
                         help="a date in the format YYYY-MM-DD",
-                        type=valid_date)
+                        type=_valid_date_)
 
     parser.add_argument("end_date",
                         help="a date in the format YYYY-MM-DD occurring after the start date",
-                        type=valid_date)
+                        type=_valid_date_)
 
     parser.add_argument("commodity",
                         help="a commodity name ('gold' | 'silver')",
-                        type=valid_commodity)
+                        type=_valid_commodity_)
 
-    return parser.parse_args()
+    arguments = parser.parse_args()
+    # check time frame for validity
+    if arguments.end_date < arguments.start_date:
+        msg = "Invalid Time Frame [{0} --> {1}]: "\
+              "Start Date > End Date".format(arguments.start_date, arguments.end_date)
+        raise ValueError(msg)
+
+    return arguments
 
 
-def valid_commodity(s):
-    if s == "gold" or s == "silver":
-        return s
+def _valid_commodity_(arg_str):
+    if arg_str == "gold" or arg_str == "silver":
+        return arg_str
     else:
-        msg = "Please indicate 'gold' or 'silver'. Not a valid commodity: '{0}'".format(s)
+        msg = "Please indicate 'gold' or 'silver'. "\
+              "Not a valid commodity: '{0}'".format(arg_str)
         raise argparse.ArgumentTypeError(msg)
 
 
-def valid_date(s):
+def _valid_date_(s):
     try:
         return datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
