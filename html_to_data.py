@@ -23,12 +23,12 @@ HEADER = {'User-Agent':
 def fetch_data():
     print ("    <<<<<<<<<<<<<<<<<<<< downloading >>>>>>>>>>>>>>>>>>>>>>>")
     for target in TARGETS:
-        target_result = process_data(target)
+        target_result = _process_data_(target)
         target_result.to_pickle(target + DATA_EXT)
     print ("    ----------------- local data updated -------------------")
 
 
-def process_data(commodity):
+def _process_data_(commodity):
     # type: (str) -> pandas.DataFrame
 
     # assign variable to commodity-based url
