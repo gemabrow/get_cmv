@@ -4,7 +4,7 @@ import argparse
 import os.path
 import pandas
 from datetime import datetime
-from commodity_data import DATA_EXT, update_local_data
+from html_to_data import DATA_EXT, fetch_data
 
 
 def main():
@@ -15,15 +15,19 @@ def main():
     # return mean + variance for timeframe
 
 
+def mean_variance(args):
+    pass
+
+
 def get_local_data(args):
-    commodity_data = args.commodity + DATA_EXT
-    no_local_data = os.path.isfile(commodity_data) is False
+    data_filename = args.commodity + DATA_EXT
+    no_local_data = os.path.isfile(data_filename) is False
 
     # if update requested or no local data, retrieve data
     if args.update or no_local_data:
-        update_local_data()
+        fetch_data()
 
-    return pandas.read_pickle(commodity_data)
+    return pandas.read_pickle(data_filename)
 
 
 def parse_arguments():
