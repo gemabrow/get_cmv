@@ -45,7 +45,7 @@ def _process_data_(target_url):
                                     header=0,
                                     attrs={"id": table_id})[0]
     # change datetime format for 'Date' column
-    # ex: "Aug 30, 2017" becomes "2017-08-30"
+    # "Aug 30, 2017" becomes "2017-08-30"
     commodity_df['Date'] = pandas.to_datetime(commodity_df.Date)
     # set date as index of dataframe for easier retrieval/manipulation
     commodity_df = commodity_df.set_index(['Date'])
